@@ -36,10 +36,11 @@ SEVERITY_ORDER = {
     "UNKNOWN": 4
 }
 
+
 def load_humor_template():
     """Load the Sheldon Cooper-style humor template"""
     try:
-        with open(MODEL_HUMOR_PATH, 'r') as file:
+        with open(MODEL_HUMOR_PATH, 'r', encoding='utf-8') as file:
             return file.read().strip()
     except Exception as e:
         logging.error(f"Error loading humor template: {e}")
@@ -53,12 +54,14 @@ def load_humor_template():
         Example: "This buffer overflow is as unpredictable as Penny's acting career! Bazinga! 🎭"
         """
 
+
 def sort_vulnerabilities(vulnerabilities):
     """Sort vulnerabilities by severity (CRITICAL > HIGH > MEDIUM > LOW)"""
     return sorted(
         vulnerabilities,
         key=lambda x: SEVERITY_ORDER.get(x.get('Severity', 'UNKNOWN'), 100)
     )
+
 
 async def generate_security_report(vulnerabilities, humor_template):
     """Generate a full security report with joke, table, and action items using DeepSeek"""
@@ -105,16 +108,17 @@ async def generate_security_report(vulnerabilities, humor_template):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7  # Balance creativity and structure
         )
-        
+
         report = response.choices[0].message.content
         if "Bazinga!" not in report:
             report = report.replace("\n", "\n") + " Bazinga! ⚛️"  # Ensure joke ending
-        
+
         return report
 
     except Exception as e:
         logging.error(f"Error generating report: {e}")
         return "This vulnerability analysis failed harder than Penny's cooking! Bazinga! 🔥"
+
 
 def load_trivy_logs(log_path="trivy_output.json"):
     try:
@@ -133,6 +137,7 @@ def load_trivy_logs(log_path="trivy_output.json"):
         logging.error(f"Error loading logs: {e}")
         return []
 
+
 async def send_discord_message_async(message):
     try:
         payload = {"content": message}
@@ -144,11 +149,12 @@ async def send_discord_message_async(message):
     except Exception as e:
         logging.error(f"Error sending to Discord: {e}")
 
+
 async def main():
     try:
         vulnerabilities = load_trivy_logs()
         humor_template = load_humor_template()
-        
+
         report = await generate_security_report(vulnerabilities, humor_template)
         await send_discord_message_async(report)
         logging.info("Full security report sent to Discord")
@@ -156,5 +162,10 @@ async def main():
     except Exception as e:
         logging.error(f"Error in main process: {e}")
 
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())
+    except Exception as e:
+        logging.error(f"Error in main process: {e}")

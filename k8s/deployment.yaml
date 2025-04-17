@@ -17,5 +17,21 @@ spec:
         - name: heybot
           image: ghcr.io/aiboosts/heybot-with-trivy-output:latest
           command: ["/bin/bash", "-c", "while true; do sleep 3600; done"]
+          env:
+            - name: DISCORD_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: discord-secrets  # Setze den Secret-Namen für Webhook-URL hier
+                  key: webhook_url  # Key im Secret, der die URL enthält
+            - name: MODEL_HUMOR_PATH1
+              valueFrom:
+                configMapKeyRef:
+                  name: humor-config  # Der Name des ConfigMaps, die die Path enthält
+                  key: humor_path  # Key im ConfigMap
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: deepseek-secrets  # Setze den Secret-Namen für API-Schlüssel hier
+                  key: api_key  # Key im Secret, der den API-Schlüssel enthält
       imagePullSecrets:
-        - name: ghcr-secret  # Das ImagePullSecret, das du vorher erstellt hast
+        - name: ghcr-secret  # ImagePullSecret für den Zugriff auf das private Docker-Image
